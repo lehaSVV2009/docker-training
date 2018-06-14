@@ -2,6 +2,124 @@
 
 Containerization - technology for providing multiple isolated environments on a single host
 
+## Docker CLI
+
+### Docker CLI Hello World
+
+List all images
+```
+docker image ls
+```
+
+Download image (download by layers)
+```
+docker pull ubuntu
+```
+
+Run `container` with `image` (downloads image if not already downloaded and executes it)
+```
+docker run ubuntu
+```
+
+*Command `docker run ubuntu` starts container and stops it right after execution, cause docker is not asked to continue running*
+
+Run `container` with `image` and execute `ls` command inside
+```
+docker run -it ubuntu ls
+```
+*Allocate a pseudo-tty - `-t`, Keep STDIN open even if not attached - `-t`*
+
+Run `container` with `image` and keep it working until stop
+```
+docker run -it ubuntu bash
+```
+
+## Docker CLI Images
+
+Download special version of image
+```
+git pull nginx:1.15.0
+```
+
+Download unofficial image
+```
+git pull tobi312/rpi-nginx:latest
+```
+
+Inspect image info
+```
+docker inspect alpine
+```
+
+Search docker images by stars from terminal
+```
+docker search mongo -s 500
+```
+
+Delete image
+```
+docker rmi mongo
+```
+
+Delete image even if it is used in container
+```
+docker rmi -f mongo
+```
+
+Delete all unused images
+```
+docker image prune
+```
+
+## Docker CLI Containers
+
+List all running containers
+```
+docker container ls
+```
+
+List all containers (with stopped)
+```
+docker container ls -a
+```
+
+Start stopped container
+```
+# c80.. is an id of stopped container
+docker start c80...
+```
+
+Stop running container
+```
+# c80.. is an id of running container
+docker stop c80...
+```
+
+Run container with specific name (not possible to create container with the same name twice)
+```
+docker run -it --name ubuntu1 ubuntu bash
+```
+
+Start container with specific name
+```
+docker start ubuntu1
+```
+
+Delete stopped docker container
+```
+docker container rm 123abc
+```
+
+Delete any (stopped or running) docker container
+```
+docker container rm -f 123abc
+```
+
+Delete all containers
+```
+docker container rm -f $(docker container ls -aq)
+```
+
 ## History
 
 ### One Server (one computer) - One App
@@ -95,118 +213,6 @@ docker version
 * Docker daemon - container/image manager
 * Docker registry - storage of images, aka artifactory
 * Docker host - machine with docker daemon (e.g. `xhy.ve` VM for Mac)
-
-## Docker CLI
-
-List all images
-```
-docker image ls
-```
-
-Download image (download by layers)
-```
-docker pull ubuntu
-```
-
-Run `container` with `image` (downloads image if not already downloaded and executes it)
-```
-docker run ubuntu
-```
-
-*Command `docker run ubuntu` starts container and stops it right after execution, cause docker is not asked to continue running*
-
-Run `container` with `image` and execute `ls` command inside
-```
-docker run -it ubuntu ls
-```
-*Allocate a pseudo-tty - `-t`, Keep STDIN open even if not attached - `-t`*
-
-Run `container` with `image` and keep it working until stop
-```
-docker run -it ubuntu bash
-```
-
-List all running containers
-```
-docker container ls
-```
-
-List all containers (with stopped)
-```
-docker container ls -a
-```
-
-Start stopped container
-```
-# c80.. is an id of stopped container
-docker start c80...
-```
-
-Stop running container
-```
-# c80.. is an id of running container
-docker stop c80...
-```
-
-Download special version of image
-```
-git pull nginx:1.15.0
-```
-
-Download unofficial image
-```
-git pull tobi312/rpi-nginx:latest
-```
-
-Inspect image info
-```
-docker inspect alpine
-```
-
-Search docker images by stars from terminal
-```
-docker search mongo -s 500
-```
-
-Delete image
-```
-docker rmi mongo
-```
-
-Delete image even if it is used in container
-```
-docker rmi -f mongo
-```
-
-Delete all unused images
-```
-docker image prune
-```
-
-Run container with specific name (not possible to create container with the same name twice)
-```
-docker run -it --name ubuntu1 ubuntu bash
-```
-
-Start container with specific name
-```
-docker start ubuntu1
-```
-
-Delete stopped docker container
-```
-docker container rm 123abc
-```
-
-Delete any (stopped or running) docker container
-```
-docker container rm -f 123abc
-```
-
-Delete all containers
-```
-docker container rm -f $(docker container ls -aq)
-```
 
 ## Docker engine architecture
 
