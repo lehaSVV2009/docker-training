@@ -390,14 +390,14 @@ docker push my-docker-account/my-example:latest
 *If the image is not official, you should add your account name before image*
 
 ## FAQ
-* What should I do if my build version is changed?
+**What should I do if my build version is changed?**
 
-You can use `gradle docker plugin`, it support app versioning.
-You can use `Dockerfile.tpl` and generate Dockerfile with valid version while building.
+You can use `gradle docker plugin`, it support docker app versioning.
+OR you can use `Dockerfile.tpl` and generate Dockerfile with valid version while building.
 
-* What should I do if I want `cd bla && mkdir xx && cd ..` in ENTRYPOINT?
+**What should I do if I want `cd bla && mkdir xx && cd ..` in ENTRYPOINT?**
 
-You should use `RUN` instead for preinstallations.
+You should use `RUN` before `ENTRYPOINT` for preinstallations.
 
 ## Resources
 
