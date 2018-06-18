@@ -315,3 +315,92 @@ root@b43..:/#
 * `Killing the main process` in the container will also `kill the container`
 * `Ctrl+PQ` `exits` container `without terminating` it
 * It's a good practice to have 1 process per container.
+
+### TODO add missing container overview
+
+### Restart Policy
+
+Restart Policy - enables Docker to automatically restart them after certain events or failures have occured
+* always - always restart after failure/exit/stop
+* unless-stopped - restart after failure/exit (not after `docker stop`)
+* on-failed - restart after failure (e.g. error code)
+
+`docker run --restart <policy>`
+
+*ps aux will always return PID 1 inside running docker container*
+
+`docker run -it --restart always ubuntu sleep 5`
+
+## Dockerfile
+
+* Describes how to pack the application into image
+* Can be used as a documentation
+
+* Usually Dockerfile is located in the root of the project
+
+### Spring Boot example
+
+1. Build executable file
+```
+cd my-example
+./gradlew build
+```
+
+2. Add Dockerfile
+```
+# FROM is required for all Dockerfiles, it means that your image is based on image in FROM section
+FROM openjdk:8-jdk-alpine
+
+# Any name :-)
+MAINTAINER lehaSVV2009@gmail.com
+
+# Copy executable file to the image root
+COPY build/libs/my-example-0.0.1-SNAPSHOT.jar /app/app.jar
+
+# WORKDIR sets all commands below to use /app relative path (e.g. cd app)
+WORKDIR /app
+
+# RUN Usually used for preinstallations
+RUN echo HELLO
+
+# Docker will listen to 
+EXPOSE 8080
+
+# PID 1 is based on ENTRYPOINT
+ENTRYPOINT ["java", "-Djava.security.edg=file:/dev/./urandom", "-jar", "app.jar"]
+```
+
+* Use your own `WORKDIR` cause if external image has non-root `WORKDIR`, there might be some troubles with access to your app
+* It is possible to add "/app/app.jar" to ENTRYPOINT without WORKDIR
+
+3. Build docker image
+```
+docker build -t my-example .
+```
+
+* For building Dockerfile above 3 docker containers were used (for `FROM` and `COPY`, for `RUN` and for `ENTRYPOINT`)
+* It's a good practice to build images in the same machine (cause layers are cached and it will be faster)
+
+4. Push to Docker Hub
+```
+docker login
+docker image tag my-example:latest my-docker-account/my-example:latest
+docker push my-docker-account/my-example:latest
+```
+*If the image is not official, you should add your account name before image*
+
+## FAQ
+* What should I do if my build version is changed?
+
+You can use `gradle docker plugin`, it support app versioning.
+You can use `Dockerfile.tpl` and generate Dockerfile with valid version while building.
+
+* What should I do if I want `cd bla && mkdir xx && cd ..` in ENTRYPOINT?
+
+You should use `RUN` instead for preinstallations.
+
+## Resources
+
+* [Docker Documentation](https://docs.docker.com/) - docker docs
+* [Docker Hub](https://hub.docker.com/) - open and free docker image registry
+* [Play with docker](https://play-with-docker.com) - online service for playing with docker by terminal
