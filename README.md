@@ -2,6 +2,18 @@
 
 Containerization - technology for providing multiple isolated environments on a single host
 
+* [Docker CLI](#docker-cli)
+* [Docker CLI for Images](#docker-cli-images)
+* [Docker CLI for Containers](#docker-cli-containers)
+* [History](#history)
+* [Installation](#installation)
+* [Docker Engine](#docker-engine)
+* [Docker Images](#docker-images)
+* [Docker Containers](#docker-containers)
+* [Dockerfile](#dockerfile)
+* [FAQ](#faq)
+* [References](#references)
+
 ## Docker CLI
 
 ### Docker CLI Hello World
@@ -214,17 +226,6 @@ Analogue of Linux containers on Windows.
 
 `Docker inc` product for containerization + many sub-modules (e.g. [Moby](https://github.com/moby/moby)).
 
-## Docker Engine
-
-Docker Engine - lightweigh and powerful open source containerization technology for applications containerizing and orcherstrating.
-
-* Enterprise Edition
-* Community Edition
-
-See [Documentation](docs.docker.com).
-
-It builds many open source projects to Docker CE or Docker EE.
-
 ## Installation
 
 * Linux - install `Docker`
@@ -243,7 +244,7 @@ DOCKER_CERT_PATH=$HOME/.docker/machine/default
 ```
 * Run terminal commands
 
-## Docker version
+#### Docker version
 
 Docker consists of `server` (`docker daemon`) with its REST API and `client` (CLI).
 To see client and server versions, run
@@ -254,7 +255,18 @@ docker version
 
 *Version scheme - YY-MM-xx (e.g. 18-06-45)*
 
-## Docker Workflow
+## Docker Engine
+
+Docker Engine - lightweigh and powerful open source containerization technology for applications containerizing and orcherstrating.
+
+* Enterprise Edition
+* Community Edition
+
+See [Documentation](docs.docker.com).
+
+It builds many open source projects to Docker CE or Docker EE.
+
+### Docker Workflow
 
 * Images - set of layers, your application in binary
 * Containers - running instance with image
@@ -262,7 +274,7 @@ docker version
 * Docker registry - storage of images, aka artifactory
 * Docker host - machine with docker daemon (e.g. `xhy.ve` VM for Mac)
 
-## Docker engine architecture
+### Docker engine architecture
 
 ```
             Docker client
@@ -341,7 +353,7 @@ docker inspect ubuntu
 * It is not possible to delete image if any container uses this image, cause image layers are really used in container. (`docker rmi -f image-name` will delete it)
 * If a layer is shared with other images it will not be removed
 
-## Docker containers
+## Docker Containers
 
 Docker container is a running instance of image.
 
@@ -490,7 +502,7 @@ OR you can use `Dockerfile.tpl` and generate Dockerfile with valid version while
 
 You should use `RUN` before `ENTRYPOINT` for preinstallations.
 
-## Resources
+## References
 
 * [Docker Documentation](https://docs.docker.com/) - docker docs
 * [Docker Hub](https://hub.docker.com/) - open and free docker image registry
