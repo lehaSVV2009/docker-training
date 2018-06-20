@@ -39,7 +39,6 @@ Run `container` with `image` and execute `ls` command inside
 ```
 docker run -it ubuntu ls
 ```
-*Allocate a pseudo-tty - `-t`, Keep STDIN open even if not attached - `-i`*
 
 Run `container` with `image` and keep it working until stop
 ```
