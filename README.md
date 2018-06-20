@@ -34,6 +34,11 @@ Run `container` with `image` and keep it working until stop
 docker run -it ubuntu bash
 ```
 
+Run container and automatically delete it after stop
+```
+docker run -it --rm ubuntu bash
+```
+
 ## Docker CLI Images
 
 Download special version of image
@@ -83,16 +88,9 @@ List all containers (with stopped)
 docker container ls -a
 ```
 
-Start stopped container
+Run container
 ```
-# c80.. is an id of stopped container
-docker start c80...
-```
-
-Stop running container
-```
-# c80.. is an id of running container
-docker stop c80...
+docker run -it ubuntu bash
 ```
 
 Run container with specific name (not possible to create container with the same name twice)
@@ -105,6 +103,18 @@ Start container with specific name
 docker start ubuntu1
 ```
 
+Stop running container
+```
+# c80.. is an id of running container
+docker stop c80...
+```
+
+Start stopped container
+```
+# c80.. is an id of stopped container
+docker start c80...
+```
+
 Delete stopped docker container
 ```
 docker container rm 123abc
@@ -115,9 +125,47 @@ Delete any (stopped or running) docker container
 docker container rm -f 123abc
 ```
 
-Delete all containers
+Delete stopped container by name
+```
+docker container rm ubuntu1
+```
+
+Delete all containers (`-aq` equals to `--all --quite`)
 ```
 docker container rm -f $(docker container ls -aq)
+```
+
+Run container and disconnect terminal-container connection (`--detach`)
+```
+# Terminal will be accessible right after command is entered, not after 15 seconds
+docker run -d ubuntu sleep 15
+```
+
+Run separate process (not PID 1) within detached container
+```
+docker exec 123abc.. ls
+```
+
+Attach to running docker container main process (to PID 1)
+```
+docker attach 123abc..
+```
+
+Run container and connect local terminal to container terminal (`--interactive --tty`)
+```
+# When you input Ctrl+Q in bash, container stops cause it's main process (bash) is stopped
+# When you input Ctrl+PQ in bash, contains is still running cause bash is not stopped
+docker run -it ubuntu bash
+```
+
+Run container with specific port (`--publish <localhostPort>:<dockerPort>`)
+```
+docker run -p 27018:27017 mongo
+```
+
+Run container with multiple ports
+```
+docker run -p 27017:27017 -p 8080:8080 my-image
 ```
 
 ## History
@@ -256,7 +304,7 @@ Some images are too small and don't contain enough tools. e.g. command `docker r
 
 * Images are pulled from `image registries`
 * [Docker Hub](https://hub.docker.com) is a default common registry (1 free Private Repo) with `official` and `unofficial` images.
-* `Google Container Registry`, `AWS Registry`, etc.
+* There are some other registries - `Google Container Registry`, `AWS ECR`, etc.
 
 *_ in `Docker Hub` url is a mark of offical image (`https://hub.docker.com/_/nginx/`)*
 
@@ -316,7 +364,50 @@ root@b43..:/#
 * `Ctrl+PQ` `exits` container `without terminating` it
 * It's a good practice to have 1 process per container.
 
-### TODO add missing container overview
+### Hardware virtualization vs OS virtualization
+
+Hardware:
+1. Physical server is powered on and hypervisor boots
+2. Hypervisor divides hardware resources into virtual resources
+3. Packages virtual resources into a VM
+
+OS:
+1. OS boots
+2. We install container engine.
+3. Container engine takes OS resources and divides them into secure isolated constructions (containers)
+
+### Image Layers and Container Layers
+
+```
+      Thin Read/Write Layer           <- Container layer
+    ↕     ↕     ↕     ↕     ↕
+  91e54...                0B
+  d74508..                1.895KB     <- Image layers (Read Only layer)
+  c220...                 194.5KB
+  d3a...                  188.1MB    
+```
+
+*AUFS () is used for file system changes inside docker containers*
+
+### Where layers are stored?
+
+* For Mac - `/var/lib/docker/aufs` inside `xhy.ve` VM.
+* Open `Docker` -> `Preferences...` -> `Disk`.
+* See [Storage Driver](https://docs.docker.com/storage/storagedriver/aufs-driver/#modifying-files-or-directories)
+* Image layers and their content are stored in the `/var/lib/docker/aufs/diff` directory
+* Running containers are mounted below the `/var/lib/docker/aufs/mnt` directory
+
+It is possible to connect to docker virtual machine and see folder structure. (google `ssh to docker for mac xhy.ve`).
+
+### Docker Ports
+
+Docker doesn't listen to all the ports.
+It listens to ports added in `EXPOSE <docker-port>` line in `Dockerfile`.
+Use `docker run -p <localhost-port>:<docker-port> -p <another-localhost-port>:<another-docker-port>`.
+
+### Fun
+
+There is a dockercraft container (`Docker` + `Minecraft`). And many other funny containers :smile:
 
 ### Restart Policy
 
