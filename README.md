@@ -27,16 +27,11 @@ Run `container` with `image` and execute `ls` command inside
 ```
 docker run -it ubuntu ls
 ```
-*Allocate a pseudo-tty - `-t`, Keep STDIN open even if not attached - `-t`*
+*Allocate a pseudo-tty - `-t`, Keep STDIN open even if not attached - `-i`*
 
 Run `container` with `image` and keep it working until stop
 ```
 docker run -it ubuntu bash
-```
-
-Run container and automatically delete it after stop
-```
-docker run -it --rm ubuntu bash
 ```
 
 ## Docker CLI Images
@@ -137,7 +132,7 @@ docker container rm -f $(docker container ls -aq)
 
 Run container and disconnect terminal-container connection (`--detach`)
 ```
-# Terminal will be accessible right after command is entered, not after 15 seconds
+# Local terminal will be accessible right after command is entered, it will not sleep for 15 seconds
 docker run -d ubuntu sleep 15
 ```
 
@@ -166,6 +161,11 @@ docker run -p 27018:27017 mongo
 Run container with multiple ports
 ```
 docker run -p 27017:27017 -p 8080:8080 my-image
+```
+
+Run container and automatically delete it after stop
+```
+docker run -it --rm ubuntu bash
 ```
 
 ## History
