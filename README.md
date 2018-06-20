@@ -11,6 +11,7 @@ Containerization - technology for providing multiple isolated environments on a 
 * [Docker Images](#docker-images)
 * [Docker Containers](#docker-containers)
 * [Dockerfile](#dockerfile)
+* [Docker Compose](#docker-compose)
 * [FAQ](#faq)
 * [References](#references)
 
@@ -57,7 +58,7 @@ Download unofficial image
 git pull tobi312/rpi-nginx:latest
 ```
 
-Inspect image info
+Inspect image info (port, env variables, layers, entrypoint, etc.)
 ```
 docker inspect alpine
 ```
@@ -80,6 +81,11 @@ docker rmi -f mongo
 Delete all unused images
 ```
 docker image prune
+```
+
+Show build history of image
+```
+docker image history my-image
 ```
 
 ## Docker CLI Containers
@@ -178,6 +184,31 @@ Run container and automatically delete it after stop
 ```
 docker run -it --rm ubuntu bash
 ```
+
+See docker container logs
+```
+docker container 123abc.. logs
+```
+
+## Dockerfile Commands
+
+TODO describe Dockerfile commands
+
+### FROM
+
+### MAINTAINER
+
+### COPY
+
+### WORKDIR
+
+### ENV
+
+### RUN
+
+### ENTRYPOINT
+
+### EXPOSE
 
 ## History
 
@@ -453,7 +484,7 @@ cd my-example
 # FROM is required for all Dockerfiles, it means that your image is based on image in FROM section
 FROM openjdk:8-jdk-alpine
 
-# Any name :-)
+# Any author name :-)
 MAINTAINER lehaSVV2009@gmail.com
 
 # Copy executable file to the image root
@@ -465,7 +496,7 @@ WORKDIR /app
 # RUN Usually used for preinstallations
 RUN echo HELLO
 
-# Docker will listen to 
+# Docker will listen to 8080
 EXPOSE 8080
 
 # PID 1 is based on ENTRYPOINT
@@ -482,14 +513,141 @@ docker build -t my-example .
 
 * For building Dockerfile above 3 docker containers were used (for `FROM` and `COPY`, for `RUN` and for `ENTRYPOINT`)
 * It's a good practice to build images in the same machine (cause layers are cached and it will be faster)
+* The image will contain `4 layers` - 1 for current image and 3 for `openjdk:8-jdk-alpine`
+* If you add `RUN echo BLA >> file.text`, it will create one more layer.
 
-4. Push to Docker Hub
+4. Run docker container
+```
+docker run -it -p 8080:8080 --name my-example-container my-example
+```
+
+5. Publish to Docker Hub
 ```
 docker login
 docker image tag my-example:latest my-docker-account/my-example:latest
 docker push my-docker-account/my-example:latest
 ```
 *If the image is not official, you should add your account name before image*
+
+## Docker Compose
+
+Docker compose - tool to deploy and manage multi-container apps in single-engine mode.
+
+* Written on `Python`
+* Acquired by `Docker inc` in `2014`
+* Lets to describe an entire application in simple `YML`
+
+See [Docker compose versions](https://docs.docker.com/compose/compose-file/compose-versioning/) to be sure that your `docker-compose` version matches your `docker` version. 
+
+### Docker Compose Spring Boots Example
+
+`Dockerfile`
+```
+FROM openjdk:8-jdk-alpine
+COPY build/libs/my-example-0.0.1-SNAPSHOT.jar /app/app.jar
+WORKDIR /app
+EXPOSE 8080
+ENTRYPOINT ["java", "-Djava.security.edg=file:/dev/./urandom", "-jar", "app.jar"]
+```
+
+`docker-compose.yml`
+```
+version: "3.6"
+
+services:
+  my-example:
+    image: .
+    ports:
+      - 8080:8080
+```
+
+### Docker Compose commands
+
+Run all containers described in docker-compose
+If any changes are done in image it recreates containers
+```
+docker-compose up
+```
+
+List current docker-compose containers logs
+```
+docker-compose logs
+```
+
+Delete all running docker containers
+```
+docker-compose down
+```
+
+## Docker Networking
+
+Let's imagine that service 1 (exposed in 8080) calls http://localhost:8081 of service 2 (exposed in 8081).
+
+If you run it in the way below, call from service 1 to http://localhost:8081 of service 2 will fail cause service 1 will try to go to container localhost of service 1, but service 2 has another container localhost.
+
+```
+docker run -it --name second-service second-image
+docker run -it --name first-service first-image
+```
+
+Possible solutions:
+
+1. Connect by IP (bad)
+
+```
+docker run --name second-service -it second-image
+
+docker inspect second-service
+{ 
+  ...,
+  "Networking": {
+    ...,
+    "IPAddress": "172.17.0.5"
+  }
+}
+
+docker run -it --name first-service -e SECOND_SERVICE_API=172.17.0.5 -p 8080:8080 first-image
+```
+
+2. Option 2. Create network
+
+```
+docker network create my-net
+docker run -it --network my-net --name second-service second-image
+docker run -it --network my-net --name first-service -e SECOND_SERVICE_API=second-service first-image
+```
+
+3. Option 3. Create network in docker-compose
+
+`docker-compose`
+```
+version: "3.6"
+
+services:
+
+  first-service:
+    image: my-dockerhub-account/first-image
+    ports:
+      - 8080:8080
+      - 8081:8081
+    environment:
+      - SECOND_SERVICE_API=second-service
+    networks:
+      - my-net
+
+  second-service:
+    image: my-dockerhub-account/second-image
+    networks:
+      - my-net
+
+  networks:
+    my-net
+```
+
+`Execute`
+```
+docker-compose up -d
+```
 
 ## FAQ
 **What should I do if my build version is changed?**
