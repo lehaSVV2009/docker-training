@@ -12,6 +12,9 @@ Containerization - technology for providing multiple isolated environments on a 
 * [Docker Containers](#docker-containers)
 * [Dockerfile](#dockerfile)
 * [Docker Compose](#docker-compose)
+* [Docker Networking](#docker-networking)
+* [Docker Swarm](#docker-swarm)
+* [Docker Volume](#docker-volume)
 * [FAQ](#faq)
 * [References](#references)
 
@@ -188,6 +191,11 @@ docker run -it --rm ubuntu bash
 See docker container logs
 ```
 docker container 123abc.. logs
+```
+
+List all docker networks
+```
+docker network ls
 ```
 
 ## Dockerfile Commands
@@ -539,7 +547,7 @@ Docker compose - tool to deploy and manage multi-container apps in single-engine
 
 See [Docker compose versions](https://docs.docker.com/compose/compose-file/compose-versioning/) to be sure that your `docker-compose` version matches your `docker` version. 
 
-### Docker Compose Spring Boots Example
+### Docker Compose Spring Boot Example
 
 `Dockerfile`
 ```
@@ -556,7 +564,7 @@ version: "3.6"
 
 services:
   my-example:
-    image: .
+    build: .
     ports:
       - 8080:8080
 ```
@@ -579,11 +587,16 @@ Delete all running docker containers
 docker-compose down
 ```
 
+Run 3 containers of service listening same port
+```
+docker-compose scale my-service=3
+```
+
 ## Docker Networking
 
-Let's imagine that service 1 (exposed in 8080) calls http://localhost:8081 of service 2 (exposed in 8081).
+Let's imagine that service 1 (exposed in 8080) calls `http://localhost:8081` of service 2 (exposed in 8081).
 
-If you run it in the way below, call from service 1 to http://localhost:8081 of service 2 will fail cause service 1 will try to go to container localhost of service 1, but service 2 has another container localhost.
+If you run it in the way below, call from service 1 to `http://localhost:8081` of service 2 will fail cause service 1 will try to go to container localhost of service 1, but service 2 has another container localhost.
 
 ```
 docker run -it --name second-service second-image
@@ -647,6 +660,88 @@ services:
 `Execute`
 ```
 docker-compose up -d
+```
+
+## Docker Swarm
+
+A swarm is a group of machines that run Docker and are joined into a cluster.
+
+### Docker Machine
+
+The tool for application provisioning (e.g. clustering).
+
+* `docker-machine ls` - list all docker machines
+* `docker-machine create my-manager-1` - create new docker machine. (Creates VM with docker inside, "virtualbox" by default).
+* `docker-machnie create --driver amazonec2 --amazonec2-open-port 8000 --amazonec2-region ... my-aws-machine-name` - create new VM with docker for AWS.
+* `eval $(docker-machine env my-manager-1)` - tunneling (on you terminal you work as on `my-manager1` machine)
+* `docker-machine active` - info about current docker-machine (useful if tunneling is used)
+* `docker-machine kill` - delete docker machine
+
+### Docker Sock
+
+Socker for docker
+* Client talks to the daemon via a local IPC/Unix socket at `/var/run/docker.sock` (might be mounted as a volume).
+* Via named pipe at `npipe:////./ pipe/ docker_engine` (Windows)
+
+### Portainer
+
+Image `portainer` is often used for examples. It is nice Admin for docker management. See [docs](https://portainer.io).
+
+It is possible to connect to remote docker machine by use docker sock as a volume:
+```
+docker volume create pontainer_data
+docker run -d -p 9000:9000 --name portainer -v  /var/run/docker.sock:/var/run/docker.sock pontainer_data:/var/bla  portainer/portainer
+```
+
+### Swarm Overview
+
+* `Swarm` consists of one or more Docker nodes (physical servers/VM-s/cloud services).
+* The only requrement is that all nodes can communicate over reliable networks.
+
+### Swarm Nodes
+
+* Nodes: `managers` and `workers`
+* Managers look after the control plane of the cluster
+* Workers accept tasks from managers and executer them
+* Managers also operate as workers
+
+```
+      Internal distributed data store
+        |             |             |
+      Manager       Manager___    Manager___   
+   _____|        _____|  _____|______|      |
+  |     |       |       |     |      |      |
+Worker Worker Worker Worker Worker Worker Woerk
+```
+
+[Raft Consensus Algorithm](https://raft.github.io/) - algorithm of orchestration used in Docker Swarm
+
+*There should be odd number of nodes*
+
+### How to create cluster
+
+Init docker swarm with manager
+```
+$ docker-machine active
+my-manager-1
+$ docker-machine ls
+... tcp://192.168.99.100:..
+$ docker swarm init --advertie-addr 192.168.99.100
+Swarm initialized
+$ docker node ls
+ID HOSTNAME STATUS AVAILABILITY *(leader)
+```
+
+Connect worker to cluster
+```
+$ docker-machine create my-worker-1
+$ eval $(docker-machine env my-worker-1)
+$ docker-machine ssh my-manager-1 "docker swarm join-token worker"
+To add a worker to swarm
+docker swarm join --token SW... 192.168.99.100:2377
+$ docker swarm join --token SW... 192.168.99.100:2377
+This node joined a swarm as a worker
+$ docker-machine ssh my-manager-1 "docker node ls"
 ```
 
 ## FAQ
