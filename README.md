@@ -679,7 +679,7 @@ The tool for application provisioning (e.g. clustering).
 
 ### Docker Sock
 
-Socker for docker
+Socket for docker
 * Client talks to the daemon via a local IPC/Unix socket at `/var/run/docker.sock` (might be mounted as a volume).
 * Via named pipe at `npipe:////./ pipe/ docker_engine` (Windows)
 
