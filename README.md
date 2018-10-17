@@ -15,6 +15,8 @@ Containerization - technology for providing multiple isolated environments on a 
 * [Docker Networking](#docker-networking)
 * [Docker Swarm](#docker-swarm)
 * [Docker Volume](#docker-volume)
+* [Related tools](#related-tools)
+* [Kubernetes](#kubernetes)
 * [FAQ](#faq)
 * [References](#references)
 
@@ -196,6 +198,46 @@ docker container 123abc.. logs
 List all docker networks
 ```
 docker network ls
+```
+
+Create network
+```
+docker network create my-network
+```
+
+Run container in network
+```
+docker run --network my-network my-image
+```
+
+Connect container with network
+```
+docker network connect my-network my-container-name
+```
+
+Delete network
+```
+docker network rm my-network
+```
+
+List all volumes
+```
+docker volume ls
+```
+
+Create volume
+```
+docker volume create my-volume
+```
+
+Run container with volume (my-volume will be automatically created if not created before)
+```
+docker run -v my-volume:/dir1/bla my-image
+```
+
+Delete volume
+```
+docker volume rm my-volume
 ```
 
 ## Dockerfile Commands
@@ -662,6 +704,12 @@ services:
 docker-compose up -d
 ```
 
+### Network Drivers
+
+* `bridge` (default)
+* `overlay` - 
+* `macvlan`
+
 ## Docker Swarm
 
 A swarm is a group of machines that run Docker and are joined into a cluster.
@@ -744,6 +792,55 @@ This node joined a swarm as a worker
 $ docker-machine ssh my-manager-1 "docker node ls"
 ```
 
+## Docker Volume
+
+### Contianer Writable layer
+
+* Every container gets its own writable non-persistent storage (writable layer)
+* It is automatically created, alongside the container, and it is tied to the lifecycle of the container
+* It should not be used to persist data
+
+### How to persist data?
+
+* Create volume
+* Mount volume to container
+
+```
+docker volume create vol1
+docker run -v vol1:/dir1/bla
+```
+OR
+```
+docker volume create vol1
+docker run --mount source=vol1,target=/dir1/bla
+```
+OR SIMPLY
+```
+docker run -v vol1:/dir1/bla
+```
+* By default it creates a volume with local driver (available only in the node where volume is created)
+* If you specify an existing volume, docker will use the existing one
+* If you specify not existing volume, docker will create new one
+* It is possible to mount shared data
+
+## Related tools
+
+* [Kubernetes](https://kubernetes.io/)
+* [Amazon ECS](https://aws.amazon.com/ecs/)
+* [Openshift](https://www.openshift.com/)
+* [rkt](https://github.com/rkt/rkt)
+* [Mesos](http://mesos.apache.org/)
+* [CoreOS](https://coreos.com/)
+
+## Kubernetes
+
+Container orchestration framework
+* container agnostic
+* initially was developed by Google
+* donated by Cloud Native Computing Foundation
+
+Consists of pods, deployments, services, deployment configs, routes, etc. Quite flexible.
+
 ## FAQ
 **What should I do if my build version is changed?**
 
@@ -759,3 +856,5 @@ You should use `RUN` before `ENTRYPOINT` for preinstallations.
 * [Docker Documentation](https://docs.docker.com/) - docker docs
 * [Docker Hub](https://hub.docker.com/) - open and free docker image registry
 * [Play with docker](https://play-with-docker.com) - online service for playing with docker by terminal
+* [Docker in AWS](https://docs.docker.com/docker-for-aws/)
+* [Cloud Native Computing Foundation](https://www.cncf.io/projects/)
